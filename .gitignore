@@ -143,3 +143,4 @@ media
 static
 
 postgres-data
+django-static

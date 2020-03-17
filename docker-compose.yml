@@ -24,3 +24,4 @@ services:
         volumes:
         - ./nginx/build/:/usr/local/build/
         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+        - ./nginx/htpasswd:/etc/nginx/htpasswd
