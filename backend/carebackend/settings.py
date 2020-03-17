@@ -19,16 +19,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '5=g0mx@ujl+i_e%9w7l-y1y)@_!-whr9*el@ott60c*pgl%-mb'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = ["192.168.1.107", "localhost"]
+# 'DJANGO_ALLOWED_HOSTS' should be a single string of hosts with a space between each.
 
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -78,7 +76,8 @@ WSGI_APPLICATION = 'carebackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'HOST': 'localhost',
+        'HOST': os.environ.get("DB_HOST", "localhost"),
+        'PORT': os.environ.get("DB_PORT", 5432),
         'OPTIONS': {
             'options': '-c search_path=django,supportlocal,public'
         },

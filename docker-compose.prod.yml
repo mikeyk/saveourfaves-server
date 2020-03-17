@@ -1,0 +1,7 @@
+version: '3.7'
+
+services:
+  backend:
+    command: gunicorn -c gunicorn.py carebackend.wsgi
+    env_file:
+        - ./.env.prod

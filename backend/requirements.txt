@@ -1,0 +1,6 @@
+Django==3.0.4
+# GDAL>=2.2,<3.0
+# pandas==1.0.2
+psycopg2==2.8.4
+geos
+gunicorn==19.9.0
