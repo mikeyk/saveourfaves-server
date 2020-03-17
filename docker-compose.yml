@@ -19,10 +19,12 @@ services:
             dockerfile: Dockerfile
         ports:
             - "80:80"
+            - "443:443"
         depends_on:
             - backend
         volumes:
         - ./nginx/build/:/usr/local/build/
+        - ./nginx/letsencrypt/:/etc/letsencrypt/
         - ./backend/carebackend/django-static/:/usr/local/django-static/
         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
         - ./nginx/nginx_auth:/etc/nginx/nginx_auth
