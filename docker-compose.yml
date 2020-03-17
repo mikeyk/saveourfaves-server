@@ -23,5 +23,6 @@ services:
             - backend
         volumes:
         - ./nginx/build/:/usr/local/build/
+        - ./backend/carebackend/django-static/:/usr/local/django-static/
         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
         - ./nginx/htpasswd:/etc/nginx/htpasswd
