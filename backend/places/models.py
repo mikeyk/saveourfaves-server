@@ -142,3 +142,8 @@ class Place(models.Model):
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.address)
+
+    def save(self, *args, **kwargs):
+        if (self.lat and self.lng):
+            self.geom = Point([float(x) for x in (self.lat, self.lng)])
+        super(self.__class__, self).save(*args, **kwargs)
