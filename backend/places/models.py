@@ -56,9 +56,10 @@ class Neighborhood(models.Model):
         ranks = {
             'mission_n_bernal': 1,
             'pacific_heights': 2,
-            'nopa_n_hayes_valley': 3,
-            'richmond_district': 4,
-            'noe_valley': 5,
+            'north_beach_n_jackson_sq': 3,
+            'nopa_n_hayes_valley': 4,
+            'richmond_district': 5,
+            'noe_valley': 6,
         }
         def sort_key(neighborhood):
             return ranks.get(neighborhood.key, 99)

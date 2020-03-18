@@ -45,7 +45,7 @@ def place_detail(request):
     nearby = []
     if place.geom:
         nearby = Place.objects.filter(
-                Q(geom__distance_lt=(place.geom, D(m=1000))) & (Q(gift_card_url__isnull=False) | Q(email_contact__isnull=False))
+                Q(geom__distance_lt=(place.geom, D(m=2500))) & (Q(gift_card_url__isnull=False) | Q(email_contact__isnull=False))
             ).exclude(
                 place_id=place_id
             ).annotate(
