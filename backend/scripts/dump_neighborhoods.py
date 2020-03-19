@@ -14,20 +14,13 @@ const Neighborhoods = %s;
 export default Neighborhoods;
 """
 
-# TODO this is hacky
-ranks = {
-    'mission_n_bernal': 1,
-    'pacific_heights': 2,
-    'north_beach_n_jackson_sq': 3,
-    'nopa_n_hayes_valley': 4,
-    'richmond_district': 5,
-    'noe_valley': 5,
-}
 def sort_key(neighborhood):
-    return ranks.get(neighborhood.key, 99)
+    return neighborhood.rank or 99
+
 with open(out_fl, 'w') as fl:
     all_output = {}
     for area in Area.objects.all():
-        output = [x.to_json() for x in Neighborhood.objects.filter(area=area)]
+        matching_hoods = sorted(Neighborhood.objects.filter(area=area), key=sort_key)
+        output = [x.to_json() for x in matching_hoods]
         all_output[area.key] = output
     fl.write(NEIGHBORHOOD_JS_OUTPUT_TEMPLATE % json.dumps(all_output))

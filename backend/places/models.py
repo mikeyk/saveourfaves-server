@@ -34,6 +34,7 @@ class Neighborhood(models.Model):
     photo_url = models.URLField(blank=True, null=True)
     photo_attribution = models.TextField(blank=True, null=True)
     area = models.ForeignKey(to='Area', on_delete=models.SET_NULL, blank=True, null=True)
+    rank = models.IntegerField(null=True, blank=True)
 
     def place_list(self, limit, offset):
         hardcoded = []
