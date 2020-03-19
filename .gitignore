@@ -144,3 +144,5 @@ static
 
 postgres-data
 django-static
+ingest/
+.DS_Store

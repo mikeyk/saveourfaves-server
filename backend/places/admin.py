@@ -1,5 +1,12 @@
 from django.contrib import admin
-from places.models import Place, NeighborhoodEntry, Neighborhood, EmailSubscription
+from places.models import (
+    Place, 
+    NeighborhoodEntry, 
+    Neighborhood, 
+    EmailSubscription, 
+    Area,
+    SubmittedGiftCardLink)
+
 
 
 class PlacesAdmin(admin.ModelAdmin):
@@ -13,3 +20,5 @@ admin.site.register(Place, PlacesAdmin)
 admin.site.register(Neighborhood)
 admin.site.register(NeighborhoodEntry, EntryAdmin)
 admin.site.register(EmailSubscription)
+admin.site.register(Area)
+admin.site.register(SubmittedGiftCardLink)

@@ -5,11 +5,6 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D
 
-NEIGHBORHOOD_JS_OUTPUT_TEMPLATE = """
-const Neighborhoods = %s;
-export default Neighborhoods;
-"""
-
 class EmailSubscription(models.Model):
     email = models.EmailField()
     place = models.ForeignKey(to='Place', on_delete=models.CASCADE)
@@ -18,6 +13,16 @@ class EmailSubscription(models.Model):
     def __str__(self):
         return "%s to %s" % (self.email, self.place.name)
 
+class SubmittedGiftCardLink(models.Model):
+
+    link = models.URLField()
+    place = models.ForeignKey(to='Place', on_delete=models.CASCADE)
+    date_submitted = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s to %s" % (self.link, self.place.name)
+    
+
 class Neighborhood(models.Model):
     name = models.TextField()
     key = models.TextField(primary_key=True)
@@ -25,23 +30,36 @@ class Neighborhood(models.Model):
     lat = models.FloatField()
     lng = models.FloatField()
     geom = models.PointField(srid=4326, null=True)
+    bounds = models.PolygonField(srid=4326, null=True, blank=True)
     photo_url = models.URLField(blank=True, null=True)
     photo_attribution = models.TextField(blank=True, null=True)
+    area = models.ForeignKey(to='Area', on_delete=models.SET_NULL, blank=True, null=True)
 
     def place_list(self, limit, offset):
         hardcoded = []
         if offset == 0:
             hardcoded = [x.place for x in NeighborhoodEntry.objects.filter(neighborhood=self).order_by('rank')]
         to_fetch = (limit - len(hardcoded)) + 1
-        close_by = Place.objects.filter(
-            Q(geom__distance_lt=(self.geom, D(m=2500))) & (Q(gift_card_url__isnull=False) | Q(email_contact__isnull=False))
-        ).exclude(
-            place_id__in=[x.place_id for x in hardcoded]
-        ).annotate(
-            distance=Distance('geom', self.geom)
-        ).order_by('distance')[offset:offset + (limit - len(hardcoded) + 1)] 
+        if self.bounds:
+            close_by = Place.objects.filter(
+                Q(geom__within=self.bounds)
+            ).annotate(
+                has_card=models.Count('gift_card_url')
+            ).exclude(
+                place_id__in=[x.place_id for x in hardcoded]
+            ).order_by('-has_card', '-num_ratings')[offset:offset + (limit - len(hardcoded) + 1)]
+        else:
+            close_by = Place.objects.filter(
+                Q(geom__distance_lt=(self.geom, D(m=2500))) & (Q(gift_card_url__isnull=False) | Q(email_contact__isnull=False))
+            ).exclude(
+                place_id__in=[x.place_id for x in hardcoded]
+            ).annotate(
+                distance=Distance('geom', self.geom)
+            ).order_by('distance')[offset:offset + (limit - len(hardcoded) + 1)] 
         more_available = len(close_by) == to_fetch
-        return (hardcoded + list(close_by)[0:-1]), more_available
+        joined = (hardcoded + list(close_by))
+        end_list = -1 if more_available else len(joined)
+        return joined[0:end_list], more_available
 
     def to_json(self):
         return {
@@ -49,28 +67,11 @@ class Neighborhood(models.Model):
             "key": self.key,
             "image": self.photo_url
         }
-
-    @classmethod
-    def dump_neighborhoods(cls, out_fl):
-        # TODO this is hacky
-        ranks = {
-            'mission_n_bernal': 1,
-            'pacific_heights': 2,
-            'north_beach_n_jackson_sq': 3,
-            'nopa_n_hayes_valley': 4,
-            'richmond_district': 5,
-            'noe_valley': 6,
-        }
-        def sort_key(neighborhood):
-            return ranks.get(neighborhood.key, 99)
-        all_hoods = sorted(cls.objects.all(), key=sort_key)
-        with open(out_fl, 'w') as fl:
-            output = [x.to_json() for x in all_hoods]
-            fl.write(NEIGHBORHOOD_JS_OUTPUT_TEMPLATE % json.dumps(output))
     
     def save(self, *args, **kwargs):
         if (self.lat and self.lng):
-            self.geom = Point([float(x) for x in (self.lat, self.lng)])
+            self.geom = Point([float(x) for x in (self.lng, self.lat)], srid=4326)
+
         super(self.__class__, self).save(*args, **kwargs)
 
 
@@ -78,6 +79,11 @@ class NeighborhoodEntry(models.Model):
     place = models.ForeignKey('Place', on_delete=models.CASCADE)
     neighborhood = models.ForeignKey('Neighborhood', on_delete=models.CASCADE)
     rank = models.IntegerField()
+
+
+class Area(models.Model):
+    key = models.TextField(primary_key=True)
+    display_name = models.TextField()
 
 # Create your models here.
 class Place(models.Model):
@@ -88,6 +94,7 @@ class Place(models.Model):
     user_rating = models.FloatField()
     num_ratings = models.FloatField()
     address = models.TextField()
+    area = models.ForeignKey(to='Area', null=True, blank=True, on_delete=models.SET_NULL)
     email_contact = models.EmailField(null=True, blank=True)
     place_url = models.URLField(null=True, blank=True)
     image_url = models.URLField(null=True, blank=True)
@@ -128,7 +135,7 @@ class Place(models.Model):
         return self.image_url or "http://TODO/placeholder"
 
     def get_short_address(self):
-        return self.address.split(",")[0]
+        return self.address.split(', CA')[0]
 
     def to_json(self):
         return {
@@ -141,10 +148,18 @@ class Place(models.Model):
             'placeID': self.place_id
         }
 
+    def to_typeahead_json(self):
+        return {
+            'name': self.name,
+            'address': self.get_short_address(),
+            'key': self.place_id,
+            'image_attribution': self.image_attribution
+        }
+
     def __str__(self):
         return '%s (%s)' % (self.name, self.address)
 
     def save(self, *args, **kwargs):
         if (self.lat and self.lng):
-            self.geom = Point([float(x) for x in (self.lat, self.lng)])
+            self.geom = Point([float(x) for x in (self.lng, self.lat)], srid=4326)
         super(self.__class__, self).save(*args, **kwargs)

@@ -1,5 +1,6 @@
 import json
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db.models import Q
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -12,7 +13,8 @@ from django.contrib.gis.measure import D
 from places.models import (
     EmailSubscription,
     Neighborhood,
-    Place
+    Place,
+    SubmittedGiftCardLink
 )
 
 @csrf_protect
@@ -81,6 +83,30 @@ def submit_email_for_place(request):
         except ValidationError:
             return JsonResponse({'error': 'bad email'}, status=400)
         subscription.save()
+    return JsonResponse({'status': 'ok'})
+
+    
+@csrf_exempt
+def submit_gift_card_link(request):
+    data = json.loads(request.body)
+    place_id = data.get('place_id')
+    gift_card_link = data.get('gift_card_url')
+    if not (place_id and gift_card_link):
+        return JsonResponse({'error': 'missing parameters'}, status=400)
+    
+    try:
+        URLValidator()(gift_card_link)
+    except ValidationError:
+        return JsonResponse({'error': 'bad url'}, status=400)
+    try:
+        place = Place.objects.get(place_id=place_id)
+    except Place.DoesNotExist:
+        return JsonResponse({'error': 'bad place ID'}, status=400)
+    submission = SubmittedGiftCardLink.objects.create(
+        link=gift_card_link,
+        place=place
+    )
+    submission.save()
     return JsonResponse({'status': 'ok'})
 
     
