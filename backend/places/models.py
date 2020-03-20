@@ -21,7 +21,17 @@ class SubmittedGiftCardLink(models.Model):
 
     def __str__(self):
         return "%s to %s" % (self.link, self.place.name)
-    
+
+class SubmittedPlace(models.Model):
+    gift_card_url = models.URLField(null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    place_id = models.TextField()
+    place_name = models.TextField()
+    place_rough_location = models.TextField()
+    date_submitted = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s at %s" % (self.place_name, self.place_rough_location)
 
 class Neighborhood(models.Model):
     name = models.TextField()
@@ -56,7 +66,7 @@ class Neighborhood(models.Model):
                 place_id__in=[x.place_id for x in hardcoded]
             ).annotate(
                 distance=Distance('geom', self.geom)
-            ).order_by('distance')[offset:offset + (limit - len(hardcoded) + 1)] 
+            ).order_by('distance')[offset:offset + (limit - len(hardcoded) + 1)]
         more_available = len(close_by) == to_fetch
         joined = (hardcoded + list(close_by))
         end_list = -1 if more_available else len(joined)
@@ -68,7 +78,7 @@ class Neighborhood(models.Model):
             "key": self.key,
             "image": self.photo_url
         }
-    
+
     def save(self, *args, **kwargs):
         if (self.lat and self.lng):
             self.geom = Point([float(x) for x in (self.lng, self.lat)], srid=4326)
@@ -131,7 +141,7 @@ class Place(models.Model):
         names = ['%s\n' % place.place_id for place in missing_photo]
         with open(out_fl, 'w') as fl:
             fl.writelines(names)
-        
+
     def get_image_url(self):
         return self.image_url or "http://TODO/placeholder"
 
@@ -146,7 +156,8 @@ class Place(models.Model):
             'placeURL': self.place_url,
             'emailContact': self.email_contact,
             'imageURL': self.get_image_url(),
-            'placeID': self.place_id
+            'placeID': self.place_id,
+            'area': self.area.key if self.area else None
         }
 
     def to_typeahead_json(self):

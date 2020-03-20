@@ -14,7 +14,8 @@ from places.models import (
     EmailSubscription,
     Neighborhood,
     Place,
-    SubmittedGiftCardLink
+    SubmittedGiftCardLink,
+    SubmittedPlace
 )
 
 @csrf_protect
@@ -27,7 +28,7 @@ def neighborhood_detail(request):
         neighborhood = Neighborhood.objects.get(key=neighborhood_key)
     except Neighborhood.DoesNotExist:
         return JsonResponse({'error': 'can\'t find neighborhood'})
-    
+
     place_list, more_available = neighborhood.place_list(limit=9, offset=offset)
     return JsonResponse({
         'suggestedPlaces': [x.to_json() for x in place_list],
@@ -43,7 +44,7 @@ def place_detail(request):
         place = Place.objects.get(place_id=place_id)
     except Place.DoesNotExist:
         return JsonResponse({'error': 'can\'t find place with that ID'})
-    
+
     nearby = []
     if place.geom:
         nearby = Place.objects.filter(
@@ -63,7 +64,7 @@ def submit_email_for_place(request):
     email = data.get('email')
     if not (place_id and email):
         return JsonResponse({'error': 'missing parameters'}, status=400)
-    
+
     try:
         place = Place.objects.get(place_id=place_id)
     except Place.DoesNotExist:
@@ -85,7 +86,7 @@ def submit_email_for_place(request):
         subscription.save()
     return JsonResponse({'status': 'ok'})
 
-    
+
 @csrf_exempt
 def submit_gift_card_link(request):
     data = json.loads(request.body)
@@ -93,7 +94,7 @@ def submit_gift_card_link(request):
     gift_card_link = data.get('gift_card_url')
     if not (place_id and gift_card_link):
         return JsonResponse({'error': 'missing parameters'}, status=400)
-    
+
     try:
         URLValidator()(gift_card_link)
     except ValidationError:
@@ -109,4 +110,33 @@ def submit_gift_card_link(request):
     submission.save()
     return JsonResponse({'status': 'ok'})
 
-    
+@csrf_exempt
+def submit_new_place(request):
+    data = json.loads(request.body)
+    gift_card_link = data.get('gift_card_url')
+    email = data.get('email')
+    if not (data.get('place_details')):
+        return JsonResponse({'error': 'missing parameters'}, status=400)
+
+    # Hacky way if people enter incomplete URLs
+    def add_url_prefix(url):
+        if url and not url.startswith('http'):
+            return 'http://%s/' % url
+        return url
+    gift_card_link = add_url_prefix(gift_card_link)
+
+    place_data = data['place_details']
+    try:
+        URLValidator()(gift_card_link) if gift_card_link else None
+    except ValidationError:
+        return JsonResponse({'error': "Gift card link isn't valid"}, status=400)
+
+    sub = SubmittedPlace(
+        place_id=place_data['place_id'],
+        place_name=place_data['structured_formatting']['main_text'],
+        place_rough_location=place_data['structured_formatting']['secondary_text'],
+        email=email,
+        gift_card_url=gift_card_link
+    )
+    sub.save()
+    return JsonResponse({'status': 'ok'})

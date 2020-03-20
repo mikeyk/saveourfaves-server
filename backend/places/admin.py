@@ -5,6 +5,7 @@ from places.models import (
     Neighborhood, 
     EmailSubscription, 
     Area,
+    SubmittedPlace,
     SubmittedGiftCardLink)
 
 
@@ -28,13 +29,6 @@ class GiftCardSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_link]
 
 
-def accept_link(modeladmin, request, queryset):
-    for suggestion in queryset:
-        pl = suggestion.place
-        pl.gift_card_url = suggestion.link
-        pl.save()
-    queryset.delete()
-accept_link.short_description = "Accept suggested link"
 
 # Register your models here.
 admin.site.register(Place, PlacesAdmin)
@@ -43,3 +37,4 @@ admin.site.register(NeighborhoodEntry, EntryAdmin)
 admin.site.register(EmailSubscription)
 admin.site.register(Area)
 admin.site.register(SubmittedGiftCardLink, GiftCardSuggestionAdmin)
+admin.site.register(SubmittedPlace)
