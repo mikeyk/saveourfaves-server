@@ -24,7 +24,7 @@ services:
             - backend
         volumes:
         - ./nginx/build/:/usr/local/build/
-        - ../certificates/:/etc/letsencrypt/
+        - ../certificates/letsencrypt/:/etc/letsencrypt/
         - ./backend/carebackend/django-static/:/usr/local/django-static/
         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-        - ./nginx/nginx_auth:/etc/nginx/nginx_auth
+        - ../certificates/nginx_auth:/etc/nginx/nginx_auth
