@@ -14,7 +14,7 @@ services:
         env_file:
         - ./.env.dev
     frontend:
-        build: 
+        build:
             context: ./nginx
             dockerfile: Dockerfile
         ports:
@@ -24,7 +24,7 @@ services:
             - backend
         volumes:
         - ./nginx/build/:/usr/local/build/
-        - ./nginx/letsencrypt/:/etc/letsencrypt/
+        - ../certificates/:/etc/letsencrypt/
         - ./backend/carebackend/django-static/:/usr/local/django-static/
         - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
         - ./nginx/nginx_auth:/etc/nginx/nginx_auth
