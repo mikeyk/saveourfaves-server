@@ -146,3 +146,5 @@ postgres-data
 django-static
 ingest/
 .DS_Store
+
+private_keys.py
