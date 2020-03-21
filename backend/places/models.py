@@ -15,7 +15,7 @@ class EmailSubscription(models.Model):
 
 class SubmittedGiftCardLink(models.Model):
 
-    link = models.URLField()
+    link = models.URLField(max_length=1000)
     place = models.ForeignKey(to='Place', on_delete=models.CASCADE)
     date_submitted = models.DateTimeField(auto_now_add=True)
 
@@ -23,7 +23,7 @@ class SubmittedGiftCardLink(models.Model):
         return "%s to %s" % (self.link, self.place.name)
 
 class SubmittedPlace(models.Model):
-    gift_card_url = models.URLField(null=True, blank=True)
+    gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
     email = models.EmailField(null=True, blank=True)
     place_id = models.TextField()
     place_name = models.TextField()
@@ -42,7 +42,7 @@ class Neighborhood(models.Model):
     lng = models.FloatField()
     geom = models.PointField(srid=4326, null=True)
     bounds = models.PolygonField(srid=4326, null=True, blank=True)
-    photo_url = models.URLField(blank=True, null=True)
+    photo_url = models.URLField(blank=True, null=True, max_length=1000)
     photo_attribution = models.TextField(blank=True, null=True)
     area = models.ForeignKey(to='Area', on_delete=models.SET_NULL, blank=True, null=True)
     rank = models.IntegerField(null=True, blank=True)
@@ -118,10 +118,10 @@ class Place(models.Model):
     address = models.TextField()
     area = models.ForeignKey(to='Area', null=True, blank=True, on_delete=models.SET_NULL)
     email_contact = models.EmailField(null=True, blank=True)
-    place_url = models.URLField(null=True, blank=True)
-    image_url = models.URLField(null=True, blank=True)
+    place_url = models.URLField(null=True, blank=True, max_length=1000)
+    image_url = models.URLField(null=True, blank=True, max_length=1000)
     image_attribution = models.TextField(null=True, blank=True)
-    gift_card_url = models.URLField(null=True, blank=True)
+    gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
     geom = models.PointField(srid=4326, null=True)
 
     @classmethod
