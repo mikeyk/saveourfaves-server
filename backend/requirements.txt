@@ -3,3 +3,5 @@ psycopg2==2.8.4
 geos
 gunicorn==19.9.0
 pandas
+requests
+ipython

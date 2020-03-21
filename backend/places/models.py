@@ -29,6 +29,7 @@ class SubmittedPlace(models.Model):
     place_name = models.TextField()
     place_rough_location = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
+    processed = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s at %s" % (self.place_name, self.place_rough_location)
@@ -95,6 +96,16 @@ class NeighborhoodEntry(models.Model):
 class Area(models.Model):
     key = models.TextField(primary_key=True)
     display_name = models.TextField()
+
+    @classmethod
+    def update_area_for_all_places(cls):
+        for a in cls.objects.all():
+            for n in Neighborhood.objects.filter(area=a):
+                if n.bounds:
+                    places = Place.objects.filter(geom__within=n.bounds)
+                else:
+                    places = Place.objects.filter(geom__distance_lt=(n.geom, D(m=5000)))
+                places.update(area=a)
 
 # Create your models here.
 class Place(models.Model):

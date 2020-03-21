@@ -126,3 +126,8 @@ USE_TZ = True
 
 STATIC_URL = '/django-static/'
 STATIC_ROOT = os.path.join(os.path.dirname(__file__), './django-static/')
+
+try:
+    from .private_keys import GOOGLE_PLACES_API_KEY
+except ImportError as e:
+    print("Please supply a private_keys.py file with a GOOGLE_PLACES_API_KEY")

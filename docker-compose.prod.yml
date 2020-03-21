@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   backend:
-    command: gunicorn -c gunicorn.py carebackend.wsgi
+    # We run a pip install to catch cases where requirements were added but a Docker build hasn't run yet
+    command: bash -c "pip install -r requirements.txt && gunicorn -c gunicorn.py carebackend.wsgi"
     env_file:
         - ./.env.prod
