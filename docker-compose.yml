@@ -10,6 +10,7 @@ services:
         working_dir: /usr/local/site/
         volumes:
         - ./backend/:/usr/local/site/
+        - ../certificates/private_keys.py:/usr/local/site/carelocal/private_keys.py
         ports:
         - 8000:8000
         env_file:
