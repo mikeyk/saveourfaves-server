@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from places.models import (
     Place,
     NeighborhoodEntry,
@@ -60,12 +61,18 @@ class EntryAdmin(admin.ModelAdmin):
 
 class GiftCardSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_link]
-    list_display = ('link', 'place', 'date_submitted')
+    list_display = ('show_gift_card_url', 'place', 'date_submitted')
+
+    def show_gift_card_url(self, obj):
+        return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.link)
 
 class PlaceSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_place]
 
-    list_display = ('place_name', 'place_rough_location', 'gift_card_url', 'email', 'date_submitted')
+    list_display = ('place_name', 'place_rough_location', 'show_gift_card_url', 'email', 'date_submitted')
+
+    def show_gift_card_url(self, obj):
+        return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.gift_card_url)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
