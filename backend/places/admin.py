@@ -76,7 +76,10 @@ class GiftCardSuggestionAdmin(admin.ModelAdmin):
     list_display = ('place', 'show_gift_card_url', 'date_submitted')
 
     def show_gift_card_url(self, obj):
-        return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.link)
+        if obj.link:
+            return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.link)
+        return None
+    show_gift_card_url.admin_order_field = 'link'
 
 class PlaceSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_place, accept_place_reject_link]
@@ -84,7 +87,10 @@ class PlaceSuggestionAdmin(admin.ModelAdmin):
     list_display = ('place_name', 'place_rough_location', 'show_gift_card_url', 'email', 'date_submitted')
 
     def show_gift_card_url(self, obj):
-        return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.gift_card_url)
+        if obj.gift_card_url:
+            return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.gift_card_url)
+        return None
+    show_gift_card_url.admin_order_field = 'gift_card_url'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
