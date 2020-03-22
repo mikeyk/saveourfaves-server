@@ -51,7 +51,8 @@ def accept_place(modeladmin, request, queryset, accept_link=True):
             p.lat = lat
             p.lng = lng
             p.image_attribution = photo_attrib
-        p.gift_card_url = check_link_against_blacklist(suggestion.gift_card_url) or p.gift_card_url
+        if accept_link:
+            p.gift_card_url = check_link_against_blacklist(suggestion.gift_card_url) or p.gift_card_url
         p.email_contact = suggestion.email or p.email_contact
         p.save()
         suggestion.processed = True
