@@ -123,6 +123,7 @@ class Place(models.Model):
     image_attribution = models.TextField(null=True, blank=True)
     gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
     geom = models.PointField(srid=4326, null=True)
+    place_types = models.TextField(null=True, blank=True)
 
     @classmethod
     def dump_names_for_site(cls, out_fl):

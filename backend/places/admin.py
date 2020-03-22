@@ -46,6 +46,7 @@ def accept_place(modeladmin, request, queryset, accept_link=True):
             p.image_url = photo_url
             p.user_rating = r['rating']
             p.num_ratings = r['user_ratings_total']
+            p.place_types = ','.join(r.get('types', []))
             p.place_url = r.get('website')
             lat, lng = r['geometry']['location']['lat'], r['geometry']['location']['lng']
             p.lat = lat
