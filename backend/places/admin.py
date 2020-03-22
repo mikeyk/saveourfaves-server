@@ -19,7 +19,11 @@ def accept_link(modeladmin, request, queryset):
     queryset.delete()
 accept_link.short_description = "Accept suggested link"
 
-def accept_place(modeladmin, request, queryset):
+def accept_place_reject_link(modeladmin, request, queryset):
+    return accept_place(modeladmin, request, queryset, accept_link=False)
+accept_place_reject_link.short_description = "Add place, but don't add the gift card link"
+
+def accept_place(modeladmin, request, queryset, accept_link=True):
     from places.google_places_helper import fetch_details_for_place_id
     # we listify the queryset since we're going to edit objects such that they won't appear
     # in the queryset anymore
@@ -57,6 +61,7 @@ def accept_place(modeladmin, request, queryset):
         # once at the end of an admin action
         Area.update_area_for_all_places()
 
+accept_place.short_description = "Add place, including any gift card link"
 
 class PlacesAdmin(admin.ModelAdmin):
     search_fields = ['name', 'place_id']
@@ -73,7 +78,7 @@ class GiftCardSuggestionAdmin(admin.ModelAdmin):
         return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.link)
 
 class PlaceSuggestionAdmin(admin.ModelAdmin):
-    actions = [accept_place]
+    actions = [accept_place, accept_place_reject_link]
 
     list_display = ('place_name', 'place_rough_location', 'show_gift_card_url', 'email', 'date_submitted')
 
