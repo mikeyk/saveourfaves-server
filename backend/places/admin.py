@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from places.helper import check_link_against_blacklist
 from places.models import (
     Place,
     NeighborhoodEntry,
@@ -11,9 +12,10 @@ from places.models import (
 
 def accept_link(modeladmin, request, queryset):
     for suggestion in queryset:
-        pl = suggestion.place
-        pl.gift_card_url = suggestion.link
-        pl.save()
+        if check_link_against_blacklist(suggestion.link):
+            pl = suggestion.place
+            pl.gift_card_url = suggestion.link
+            pl.save()
     queryset.delete()
 accept_link.short_description = "Accept suggested link"
 
@@ -41,7 +43,7 @@ def accept_place(modeladmin, request, queryset):
             p.lat = lat
             p.lng = lng
             p.image_attribution = photo_attrib
-        p.gift_card_url = suggestion.gift_card_url or p.gift_card_url
+        p.gift_card_url = check_link_against_blacklist(suggestion.gift_card_url) or p.gift_card_url
         p.email_contact = suggestion.email or p.email_contact
         p.save()
         suggestion.processed = True
@@ -61,7 +63,7 @@ class EntryAdmin(admin.ModelAdmin):
 
 class GiftCardSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_link]
-    list_display = ('show_gift_card_url', 'place', 'date_submitted')
+    list_display = ('place', 'show_gift_card_url', 'date_submitted')
 
     def show_gift_card_url(self, obj):
         return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.link)
