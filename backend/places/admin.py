@@ -60,9 +60,12 @@ class EntryAdmin(admin.ModelAdmin):
 
 class GiftCardSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_link]
+    list_display = ('link', 'place', 'date_submitted')
 
 class PlaceSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_place]
+
+    list_display = ('place_name', 'place_rough_location', 'gift_card_url', 'email', 'date_submitted')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
