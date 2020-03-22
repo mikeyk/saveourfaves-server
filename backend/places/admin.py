@@ -33,6 +33,10 @@ def accept_place(modeladmin, request, queryset):
             p = Place(place_id=place_id)
 
             r, photo_url, photo_attrib = fetch_details_for_place_id(place_id)
+            if not r.get('rating'):  # probably not meaningful place
+                suggestion.processed = True
+                suggestion.save()
+                continue
             p.name = r['name']
             p.address = r['formatted_address']
             p.image_url = photo_url
