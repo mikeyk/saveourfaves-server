@@ -18,11 +18,12 @@ for sub in EmailSubscription.objects.all():
 by_place_items = sorted(by_place.items(), key=lambda x: len(x[1]), reverse=True)
 print(by_place_items)
 with open(outfl, 'w') as fl:
-    writer = csv.DictWriter(fl, fieldnames=['Place', 'Place Email', 'Website', 'Count', 'Emails', 'Gift Card URL'])
+    writer = csv.DictWriter(fl, fieldnames=['place_id', 'Place', 'Place Email', 'Website', 'Count', 'Emails', 'Gift Card URL'])
     writer.writeheader()
     for place_id, items in by_place_items:
         place = items[0].place
         writer.writerow({
+            'place_id': place.place_id,
             'Place': place.name,
             'Place Email': place.email_contact,
             'Website': place.place_url,
