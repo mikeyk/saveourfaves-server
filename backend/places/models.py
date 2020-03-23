@@ -8,7 +8,7 @@ from django.contrib.gis.measure import D
 class EmailSubscription(models.Model):
     email = models.EmailField()
     place = models.ForeignKey(to='Place', on_delete=models.CASCADE)
-    sent_to_place_owner = models.DateTimeField(null=True, blank=True)
+    processed = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s to %s" % (self.email, self.place.name)
@@ -122,7 +122,9 @@ class Place(models.Model):
     image_url = models.URLField(null=True, blank=True, max_length=1000)
     image_attribution = models.TextField(null=True, blank=True)
     gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
-    geom = models.PointField(srid=4326, null=True)
+    takeout_url = models.URLField(null=True, blank=True, max_length=1000)
+    donation_url = models.URLField(null=True, blank=True, max_length=1000)
+    geom = models.PointField(srid=4326, null=True, blank=True)
     place_types = models.TextField(null=True, blank=True)
 
     @classmethod
