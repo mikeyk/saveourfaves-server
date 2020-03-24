@@ -80,5 +80,5 @@ The SaveOurFaves team
         )
         message.attach_alternative(html_email_body, 'text/html')
         message.send()
-        print("Sent email to", place_name)
+        print("Sent email to", place_name, to_address)
         EmailSubscription.objects.filter(pk__in=sub_pks).update(processed=True)
