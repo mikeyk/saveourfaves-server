@@ -28,6 +28,9 @@ with mail.get_connection() as connection:
     for (_, subs) in by_place_items[0:limit]:
         emails_to_notify_about = [x.email for x in subs]
         place = subs[0].place
+        if place.gift_card_url:
+            print("Skipping", place.name, "because we have a gift card URL for it")
+            continue
         sub_pks = [sub.pk for sub in subs]
         place_name = place.name
         to_address = place.email_contact
