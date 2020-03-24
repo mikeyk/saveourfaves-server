@@ -72,7 +72,7 @@ The SaveOurFaves team
         The SaveOurFaves team</p>
         """
         if not really_send:
-            print("Would have sent to %s: %s" % (to_address, plain_email_body))
+            print("Would have sent to %s: %s" % (to_address, place_name))
             continue
         message = EmailMultiAlternatives(
             subject=f"Buying a gift card to support {place_name}",
