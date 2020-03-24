@@ -2,7 +2,6 @@ from collections import defaultdict
 import django
 import sys
 import os
-import boto3
 os.environ['DJANGO_SETTINGS_MODULE'] = 'carebackend.settings'
 sys.path.append(os.path.dirname(__file__) + '/..')
 django.setup()
@@ -14,7 +13,10 @@ from places.models import EmailSubscription
 
 really_send = len(sys.argv) > 1 and (sys.argv[1] == "send")
 
-LIMIT = 1
+if len(sys.argv) > 2:
+    limit = int(sys.argv[2])
+else:
+    limit = 1
 
 by_place = defaultdict(list)
 for sub in EmailSubscription.objects.filter(processed=False, place__email_contact__isnull=False):
@@ -23,7 +25,7 @@ for sub in EmailSubscription.objects.filter(processed=False, place__email_contac
 by_place_items = sorted(by_place.items(), key=lambda x: len(x[1]), reverse=True)
 
 with mail.get_connection() as connection:
-    for (_, subs) in by_place_items[0:LIMIT]:
+    for (_, subs) in by_place_items[0:limit]:
         emails_to_notify_about = [x.email for x in subs]
         place = subs[0].place
         sub_pks = [sub.pk for sub in subs]
@@ -75,4 +77,5 @@ The SaveOurFaves team
         )
         message.attach_alternative(html_email_body, 'text/html')
         message.send()
+        print("Sent email to", place_name)
         EmailSubscription.objects.filter(pk__in=sub_pks).update(processed=True)
