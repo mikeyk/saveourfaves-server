@@ -97,12 +97,20 @@ class PlaceSuggestionAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs.filter(processed=False)
 
+class EmailSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('email', 'place', 'show_place_email')
+    def show_place_email(self, obj):
+        return obj.place.email_contact
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(processed=False)
+
 
 # Register your models here.
 admin.site.register(Place, PlacesAdmin)
 admin.site.register(Neighborhood)
 admin.site.register(NeighborhoodEntry, EntryAdmin)
-admin.site.register(EmailSubscription)
+admin.site.register(EmailSubscription, EmailSubscriptionAdmin)
 admin.site.register(Area)
 admin.site.register(SubmittedGiftCardLink, GiftCardSuggestionAdmin)
 admin.site.register(SubmittedPlace, PlaceSuggestionAdmin)
