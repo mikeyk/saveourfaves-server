@@ -19,7 +19,11 @@ else:
     limit = 1
 
 by_place = defaultdict(list)
-for sub in EmailSubscription.objects.filter(processed=False, place__email_contact__isnull=False):
+for sub in EmailSubscription.objects.filter(
+    processed=False,
+    place__gift_card_url__isnull=True,
+    place__email_contact__isnull=False
+):
     by_place[sub.place.place_id].append(sub)
 
 by_place_items = sorted(by_place.items(), key=lambda x: len(x[1]), reverse=True)
