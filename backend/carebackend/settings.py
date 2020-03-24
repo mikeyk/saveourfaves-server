@@ -142,7 +142,7 @@ LOGGING = {
 STATIC_URL = '/django-static/'
 STATIC_ROOT = os.path.join(os.path.dirname(__file__), './django-static/')
 
-EMAIL_HOST = "mail.privateemail.com"
+EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
