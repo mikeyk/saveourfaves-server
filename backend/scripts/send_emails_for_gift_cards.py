@@ -31,7 +31,7 @@ by_place_items = sorted(by_place.items(), key=lambda x: len(x[1]), reverse=True)
 subs = EmailSubscription.objects.filter(
     processed=False,
     place__gift_card_url__isnull=False
-)
+)[0:limit]
 
 with mail.get_connection() as connection:
     for sub in subs:
