@@ -167,6 +167,8 @@ class Place(models.Model):
             'name': self.name,
             'address': self.get_short_address(),
             'giftCardURL': self.gift_card_url,
+            'takeoutURL': self.takeout_url,
+            'donationURL': self.donation_url,
             'placeURL': self.place_url,
             'emailContact': self.email_contact,
             'imageURL': self.get_image_url(),
