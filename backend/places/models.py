@@ -48,10 +48,11 @@ class Neighborhood(models.Model):
     rank = models.IntegerField(null=True, blank=True)
 
     def place_list(self, limit, offset):
-        hardcoded = []
+        hardcoded = [x.place for x in NeighborhoodEntry.objects.filter(neighborhood=self).order_by('rank')]
         if offset == 0:
-            hardcoded = [x.place for x in NeighborhoodEntry.objects.filter(neighborhood=self).order_by('rank')]
-        to_fetch = (limit - len(hardcoded)) + 1
+            to_fetch = (limit - len(hardcoded)) + 1
+        else:
+            to_fetch = limit + 1
         if self.bounds:
             close_by = Place.objects.filter(
                 Q(geom__within=self.bounds)
@@ -71,7 +72,10 @@ class Neighborhood(models.Model):
                 distance=Distance('geom', self.geom)
             ).order_by('-has_card', 'distance')[offset:offset + (limit - len(hardcoded) + 1)]
         more_available = len(close_by) == to_fetch
-        joined = (hardcoded + list(close_by))
+        if offset == 0:
+            joined = (hardcoded + list(close_by))
+        else:
+            joined = list(close_by)
         end_list = -1 if more_available else len(joined)
         return joined[0:end_list], more_available
 
