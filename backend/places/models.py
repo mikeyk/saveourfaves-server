@@ -62,12 +62,14 @@ class Neighborhood(models.Model):
             ).order_by('-has_card', '-num_ratings')[offset:offset + (limit - len(hardcoded) + 1)]
         else:
             close_by = Place.objects.filter(
-                Q(geom__distance_lt=(self.geom, D(m=2500))) & (Q(gift_card_url__isnull=False) | Q(email_contact__isnull=False))
+                Q(geom__distance_lt=(self.geom, D(m=2500)))
             ).exclude(
                 place_id__in=[x.place_id for x in hardcoded]
             ).annotate(
+                has_card=models.Count('gift_card_url')
+            ).annotate(
                 distance=Distance('geom', self.geom)
-            ).order_by('distance')[offset:offset + (limit - len(hardcoded) + 1)]
+            ).order_by('-has_card', 'distance')[offset:offset + (limit - len(hardcoded) + 1)]
         more_available = len(close_by) == to_fetch
         joined = (hardcoded + list(close_by))
         end_list = -1 if more_available else len(joined)
