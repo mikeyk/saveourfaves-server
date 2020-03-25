@@ -186,6 +186,9 @@ class Place(models.Model):
         return '%s (%s)' % (self.name, self.address)
 
     def save(self, *args, **kwargs):
+        from places.helper import check_link_against_blacklist
+        if self.gift_card_url and not check_link_against_blacklist(self.gift_card_url):
+            raise Exception("Bad Link Saved")
         if (self.lat and self.lng):
             self.geom = Point([float(x) for x in (self.lng, self.lat)], srid=4326)
         super(self.__class__, self).save(*args, **kwargs)
