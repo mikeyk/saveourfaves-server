@@ -75,6 +75,7 @@ def accept_place(modeladmin, request, queryset, accept_link=True):
             p.image_attribution = photo_attrib
         if accept_link:
             p.gift_card_url = check_link_against_blacklist(suggestion.gift_card_url) or p.gift_card_url
+        p.donation_url = p.donation_url or suggestion.donation_url
         p.email_contact = suggestion.email or p.email_contact
         p.save()
         suggestion.processed = True
@@ -106,12 +107,13 @@ class GiftCardSuggestionAdmin(admin.ModelAdmin):
 class PlaceSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_place, accept_place_reject_link]
 
-    list_display = ('place_name', 'link_matched_place', 'place_rough_location', 'show_gift_card_url', 'show_existing_gift_card_url', 'email', 'date_submitted')
+    list_display = ('place_name', 'link_matched_place', 'place_rough_location', 'show_gift_card_url', 'show_existing_gift_card_url', 'donation_url', 'email')
     list_filter = [NullListFilter]
 
     def link_matched_place(self, obj):
         if obj.matched_place:
-            return format_html("<a target='_blank' href='/admin/places/place/{place_id}'>{place_name}</a>", place_id=obj.place_id, place_name=obj.matched_place.name)
+            return format_html("<a target='_blank' href='/admin/places/place/{place_id}'>{place_name} at {place_address}</a>",
+             place_address=obj.matched_place.address, place_id=obj.place_id, place_name=obj.matched_place.name)
         return None
     link_matched_place.short_description = 'Existing Place'
 

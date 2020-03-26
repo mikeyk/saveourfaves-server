@@ -91,12 +91,12 @@ def submit_email_for_place(request):
 def submit_gift_card_link(request):
     data = json.loads(request.body)
     place_id = data.get('place_id')
-    gift_card_link = data.get('gift_card_url')
-    if not (place_id and gift_card_link):
+    gift_card_url = data.get('gift_card_url')
+    if not (place_id and gift_card_url):
         return JsonResponse({'error': 'missing parameters'}, status=400)
 
     try:
-        URLValidator()(gift_card_link)
+        URLValidator()(gift_card_url)
     except ValidationError:
         return JsonResponse({'error': 'bad url'}, status=400)
     try:
@@ -104,7 +104,7 @@ def submit_gift_card_link(request):
     except Place.DoesNotExist:
         return JsonResponse({'error': 'bad place ID'}, status=400)
     submission = SubmittedGiftCardLink.objects.create(
-        link=gift_card_link,
+        link=gift_card_url,
         place=place
     )
     submission.save()
@@ -113,7 +113,8 @@ def submit_gift_card_link(request):
 @csrf_exempt
 def submit_new_place(request):
     data = json.loads(request.body)
-    gift_card_link = data.get('gift_card_url')
+    gift_card_url = data.get('gift_card_url')
+    donation_url = data.get('donation_url')
     email = data.get('email')
     if not (data.get('place_details')):
         return JsonResponse({'error': 'missing parameters'}, status=400)
@@ -123,11 +124,12 @@ def submit_new_place(request):
         if url and not url.startswith('http'):
             return 'http://%s/' % url
         return url
-    gift_card_link = add_url_prefix(gift_card_link)
+    gift_card_url = add_url_prefix(gift_card_url)
+    donation_url = add_url_prefix(donation_url)
 
     place_data = data['place_details']
     try:
-        URLValidator()(gift_card_link) if gift_card_link else None
+        URLValidator()(gift_card_url) if gift_card_url else None
     except ValidationError:
         return JsonResponse({'error': "Gift card link isn't valid"}, status=400)
 
@@ -136,7 +138,8 @@ def submit_new_place(request):
         place_name=place_data['structured_formatting']['main_text'],
         place_rough_location=place_data['structured_formatting']['secondary_text'],
         email=email,
-        gift_card_url=gift_card_link
+        donation_url=donation_url,
+        gift_card_url=gift_card_url
     )
     sub.save()
     return JsonResponse({'status': 'ok'})

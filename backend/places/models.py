@@ -24,6 +24,7 @@ class SubmittedGiftCardLink(models.Model):
 
 class SubmittedPlace(models.Model):
     gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
+    donation_url = models.URLField(null=True, blank=True, max_length=1000)
     email = models.EmailField(null=True, blank=True)
     place_id = models.TextField()
     matched_place = models.ForeignKey(to='Place', on_delete=models.CASCADE, null=True, blank=True)
