@@ -1,5 +1,10 @@
+import operator
+from functools import reduce
+from django.db.models import F, Q
+from django.db import models
 from django.contrib import admin
 from django.utils.html import format_html
+from places.constants import BLACKLISTED_DOMAINS
 from places.helper import check_link_against_blacklist
 from places.models import (
     Place,
@@ -9,6 +14,22 @@ from places.models import (
     Area,
     SubmittedPlace,
     SubmittedGiftCardLink)
+
+class NullListFilter(admin.SimpleListFilter):
+    title = "Gift Card Link"
+    parameter_name = "gift_card_url"
+
+    def lookups(self, request, model_admin):
+        return (
+            ('0', 'Has Link', ),
+            ('1', 'No Link', ),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() in ('0', '1'):
+            kwargs = { '{0}__isnull'.format(self.parameter_name) : self.value() == '1' }
+            return queryset.filter(**kwargs)
+        return queryset
 
 def accept_link(modeladmin, request, queryset):
     for suggestion in queryset:
@@ -85,17 +106,44 @@ class GiftCardSuggestionAdmin(admin.ModelAdmin):
 class PlaceSuggestionAdmin(admin.ModelAdmin):
     actions = [accept_place, accept_place_reject_link]
 
-    list_display = ('place_name', 'place_rough_location', 'show_gift_card_url', 'email', 'date_submitted')
+    list_display = ('place_name', 'link_matched_place', 'place_rough_location', 'show_gift_card_url', 'show_existing_gift_card_url', 'email', 'date_submitted')
+    list_filter = [NullListFilter]
+
+    def link_matched_place(self, obj):
+        if obj.matched_place:
+            return format_html("<a target='_blank' href='/admin/places/place/{place_id}'>{place_name}</a>", place_id=obj.place_id, place_name=obj.matched_place.name)
+        return None
+    link_matched_place.short_description = 'Existing Place'
 
     def show_gift_card_url(self, obj):
         if obj.gift_card_url:
             return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.gift_card_url)
         return None
     show_gift_card_url.admin_order_field = 'gift_card_url'
+    show_gift_card_url.short_description = 'Proposed Gift Card URL'
+
+    def show_existing_gift_card_url(self, obj):
+        if obj.matched_place and obj.matched_place.gift_card_url:
+            return format_html("<a target='_blank' href='{url}'>{url}</a>", url=obj.matched_place.gift_card_url)
+        return None
+    show_existing_gift_card_url.short_description = 'Existing Gift Card URL'
 
     def get_queryset(self, request):
+        blacklist_clauses = (Q(gift_card_url__icontains=b) for b in BLACKLISTED_DOMAINS)
+        blacklist_query = reduce(operator.or_, blacklist_clauses)
+
         qs = super().get_queryset(request)
-        return qs.filter(processed=False)
+        return qs.filter(
+            processed=False
+        ).annotate(
+            has_card=models.Count('gift_card_url'),
+            has_email=models.Count('email')
+        ).order_by('-has_card', '-has_email').exclude(
+            Q(gift_card_url__isnull=False) &
+            Q(matched_place__gift_card_url=F('gift_card_url'))
+        ).exclude(
+            blacklist_query
+        )
 
 class EmailSubscriptionAdmin(admin.ModelAdmin):
     list_display = ('email', 'place', 'show_place_email')

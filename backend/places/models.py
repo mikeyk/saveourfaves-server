@@ -26,6 +26,7 @@ class SubmittedPlace(models.Model):
     gift_card_url = models.URLField(null=True, blank=True, max_length=1000)
     email = models.EmailField(null=True, blank=True)
     place_id = models.TextField()
+    matched_place = models.ForeignKey(to='Place', on_delete=models.CASCADE, null=True, blank=True)
     place_name = models.TextField()
     place_rough_location = models.TextField()
     date_submitted = models.DateTimeField(auto_now_add=True)
@@ -33,6 +34,14 @@ class SubmittedPlace(models.Model):
 
     def __str__(self):
         return "%s at %s" % (self.place_name, self.place_rough_location)
+
+    def save(self, *args, **kwargs):
+        if self.place_id:
+            try:
+                self.matched_place = Place.objects.get(place_id=self.place_id)
+            except Place.DoesNotExist:
+                pass
+        super(self.__class__, self).save(*args, **kwargs)
 
 class Neighborhood(models.Model):
     name = models.TextField()
