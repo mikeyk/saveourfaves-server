@@ -20,6 +20,7 @@ def fetch_photo_redirect(photo_ref):
     redirect = photo_req.headers.get("Location")
     return redirect or None
 
+
 def fetch_details_for_place_id(place_id):
     full_url = PLACES_DETAILS_URL.format(
         ROOT_URL=PLACES_API_ROOT,
@@ -28,6 +29,8 @@ def fetch_details_for_place_id(place_id):
         fields=FETCH_FIELDS)
     resp = requests.get(full_url)
     data = resp.json()
+    if not 'result' in data:
+        return {}, None, None
     r = data['result']
     photo_url = None
     photo_attrib = None
