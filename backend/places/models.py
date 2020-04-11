@@ -134,6 +134,7 @@ class Place(models.Model):
     address = models.TextField()
     area = models.ForeignKey(to='Area', null=True, blank=True, on_delete=models.SET_NULL)
     email_contact = models.EmailField(null=True, blank=True)
+    phone_number = models.TextField(null=True, blank=True, max_length=50)
     place_url = models.URLField(null=True, blank=True, max_length=1000)
     image_url = models.URLField(null=True, blank=True, max_length=1000)
     image_attribution = models.TextField(null=True, blank=True)
